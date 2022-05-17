@@ -19,7 +19,16 @@ exports.register = async (req, res) => {
         url: "sample url",
       },
     });
-    res.status(201).json({ success: true, user });
+
+    const token = await user.generateToken();
+
+    res
+      .status(201)
+      .cookie("token", token, {
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 100),
+        httpOnly: true,
+      })
+      .json({ success: true, user, token });
   } catch (error) {
     res.status(500).json({
       status: false,
@@ -47,7 +56,13 @@ exports.login = async (req, res) => {
 
     const token = await user.generateToken();
 
-    res.status(200).cookie("token", token).json({ success: true, user, token });
+    res
+      .status(200)
+      .cookie("token", token, {
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 100),
+        httpOnly: true,
+      })
+      .json({ success: true, user, token });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
